@@ -215,5 +215,6 @@ class StateNotify:
     def cmd_STATE_NOTIFY_STATE(self, gcmd):
         self.gcode.respond_info("State Notify state: %s" % self.state)
 
+
 def load_config(config):
     return StateNotify(config)

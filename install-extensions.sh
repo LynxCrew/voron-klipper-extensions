@@ -5,7 +5,7 @@ set -e
 
 KLIPPER_PATH="${HOME}/klipper"
 SYSTEMDDIR="/etc/systemd/system"
-EXTENSION_LIST="gcode_shell_command.py settling_probe.py led_interpolate.py state_notify.py"
+EXTENSION_LIST="adaptive_bed_mesh gcode_shell_command settling_probe led_interpolate state_notify"
 SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/ && pwd )"
 
 # Step 1:  Verify Klipper has been installed
@@ -21,19 +21,24 @@ function check_klipper() {
 # Step 2: Check if the extensions are already present.
 # This is a way to check if this is the initial installation.
 function check_existing() {
-    local -i existing=0
     for extension in ${EXTENSION_LIST}; do
-        [ -e "${KLIPPER_PATH}/klippy/extras/${extension}" ] && existing=1 || existing=0
-        [ ${existing} -eq 0 ] && break
+        [ -L "${KLIPPER_PATH}/klippy/extras/${extension}.py" ] && return 0
     done
-    echo ${existing}
+    return 1
 }
 
 # Step 3: Link extension to Klipper
 function link_extension() {
     echo "Linking extensions to Klipper..."
     for extension in ${EXTENSION_LIST}; do
-        ln -sf "${SRCDIR}/${extension}" "${KLIPPER_PATH}/klippy/extras/${extension}"
+        ln -sf "${SRCDIR}/${extension}/${extension}.py" "${KLIPPER_PATH}/klippy/extras/${extension}.py"
+    done
+}
+
+function clean_links() {
+    echo "Removing existing links..."
+    for extension in ${EXTENSION_LIST}; do
+        rm -f ${KLIPPER_PATH}/klippy/extras/${extension}.py
     done
 }
 
@@ -50,6 +55,7 @@ function verify_ready() {
     fi
 }
 
+
 while getopts "k:" arg; do
     case ${arg} in
         k) KLIPPER_PATH=${OPTARG} ;;
@@ -57,7 +63,7 @@ while getopts "k:" arg; do
 done
 
 verify_ready
-existing_install=$(check_existing)
+existing_install && clean_links
 link_extension
 restart_klipper
 exit 0
