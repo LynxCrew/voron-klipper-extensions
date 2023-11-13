@@ -17,7 +17,7 @@ The repository provide the following Klipper extensions:
 1. Login to your RaspberryPi.
 2. Clone this repository:
 ```sh
-git clone https://github.com/voidtrance/voron-klipper-extensions.git
+git clone https://github.com/LynxCrew/voron-klipper-extensions.git
 ```
 3. Change directory to the new cloned repository:
 ```sh
@@ -32,7 +32,7 @@ cd voron-klipper-extensions
 [update_manager voron-klipper-extensions]
 type: git_repo
 path: ~/voron-klipper-extensions
-origin: https://github.com/voidtrance/voron-klipper-extensions.git
+origin: https://github.com/LynxCrew/voron-klipper-extensions.git
 install_script: install-extensions.sh
 managed_services: klipper
 ```
@@ -54,7 +54,7 @@ rm -rf voron-klipper-extensions
 ```
 5. (Optional) If you have removed the repository in step 4, you'll have to
 remove the Moonraker update manager setup as well. Edit `moonraker.conf` and
-remove the `[update_manager voron-klipper-exteions]` section.
+remove the `[update_manager voron-klipper-extensions]` section.
 
 
 ## Contributing
