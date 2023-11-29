@@ -111,6 +111,15 @@ class StateNotify:
             self.trigger_on_sync_update = False
             self._state_handler("idle_printing", eventtime)
 
+    def _check_printer_printing(self):
+        # VirtualSD.is_active() only returns True if the printer is actively
+        # printing. If it is paused, it returns False. So, in order to correctly
+        # determine if the printer is currently printing, we can also use
+        # VirtualSD.file_path() and VirtualSD.progress() since the class does store
+        # the currently printing file, the file size, and position across pauses.
+        return self.sdcard.is_active() or \
+            (self.sdcard.file_path() and self.sdcard.progress() > 0 and self.sdcard.progress())
+    
     def _state_handler(self, state, eventtime):
         log("Substate: %s", state)
         template = None
@@ -127,13 +136,12 @@ class StateNotify:
             if self.menu:
                 menu_is_running = self.menu.is_running()
             if self.state in ("ready", "active", "printing") and not menu_is_running:
-                self.reactor.update_timer(self.inactive_timer,
-                                          self.reactor.monotonic() + self.inactive_timeout)
                 if self.state == "printing":
                     self.reactor.update_timer(self.pause_timer,
                                               self.reactor.NEVER)
-                    self.handle_state_change("active", eventtime,
-                                             "__invalid__")
+                    self.handle_state_change("active", eventtime)
+                self.reactor.update_timer(self.inactive_timer,
+                                          self.reactor.monotonic() + self.inactive_timeout)
             return
         elif state == "idle_printing" or state == "menu_begin":
             self.reactor.update_timer(self.inactive_timer, self.reactor.NEVER)
@@ -142,7 +150,7 @@ class StateNotify:
                                           self.reactor.monotonic() + TIMER_DURATION)
             state = "active"
             self.reactor.update_timer(self.pause_timer, self.reactor.NEVER)
-            if self.sdcard.is_active():
+            if self._check_printer_printing():
                 state = "printing"
                 # There is no way for us to get a notification that the
                 # print has been paused other than to monitor the
