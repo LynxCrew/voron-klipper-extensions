@@ -1,8 +1,10 @@
 import logging
 from extras.gcode_macro import GCodeMacro
 
+
 def log(fmt, *args):
     logging.info("loop_macro: " + fmt % args)
+
 
 class LoopMacro(GCodeMacro):
     def __init__(self, config):
@@ -25,7 +27,7 @@ class LoopMacro(GCodeMacro):
     def cmd(self, gcmd):
         if self.printer.is_shutdown():
             return
-        
+
         limit = gcmd.get_int("LIMIT", None)
         if limit is None:
             limit = self.iteration_limit
@@ -45,8 +47,8 @@ class LoopMacro(GCodeMacro):
         self.entry_template.run_gcode_from_command(context)
 
         stop_execution = False
-        while not self.printer.is_shutdown() and \
-            not stop_execution:
+        while (not self.printer.is_shutdown()
+               and not stop_execution):
             context = self._create_context(gcmd, self.template)
             script = self.template.render(context)
             for gcode in script.split("\n"):

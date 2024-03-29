@@ -54,8 +54,8 @@ class SettlingProbe(PrinterProbe):
         gcmd.respond_info("Settling sample (ignored)...")
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
         lift_speed = self.get_lift_speed(gcmd)
-        sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
-                                             self.sample_retract_dist, minval=0.)
+        sample_retract_dist = gcmd.get_float(
+            "SAMPLE_RETRACT_DIST", self.sample_retract_dist, minval=0.)
         pos = self._probe(speed)
         pos[2] += sample_retract_dist
         self._move(pos, lift_speed)
@@ -86,6 +86,7 @@ class SettlingProbe(PrinterProbe):
         ret = PrinterProbe.cmd_PROBE_CALIBRATE(self, gcmd)
         self.settling_sample = global_settling_sample
         return ret
+
 
 def load_config(config):
     return SettlingProbe(config)
