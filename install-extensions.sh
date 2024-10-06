@@ -22,7 +22,7 @@ function check_klipper() {
 # This is a way to check if this is the initial installation.
 function check_existing() {
     for extension in ${EXTENSION_LIST}; do
-        [ -L "${KLIPPER_PATH}/klippy/extras/${extension}.py" ] || return 1
+        [ -f "${KLIPPER_PATH}/klippy/extras/${extension}.py" ] || return 1
     done
     return 0
 }
@@ -69,11 +69,12 @@ while getopts "k:u" arg; do
 done
 
 verify_ready
-if ! check_existing; then
-    link_extensions
+
+if [ ${do_uninstall} -eq 1 ]; then
+    unlink_extensions
 else
-    if [ ${do_uninstall} -eq 1 ]; then
-        unlink_extensions
+    if ! check_existing; then
+        link_extensions
     fi
 fi
 restart_klipper
