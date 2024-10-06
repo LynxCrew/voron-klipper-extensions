@@ -40,7 +40,9 @@ function link_extensions() {
 function unlink_extensions() {
     echo "Unlinking extensions from Klipper..."
     for extension in ${EXTENSION_LIST}; do
-        rm -f "${KLIPPER_PATH}/klippy/extras/${extension}.py"
+        if [ -L "${KLIPPER_PATH}/klippy/extras/${extension}.py" ]; then
+            rm -f "${KLIPPER_PATH}/klippy/extras/${extension}.py"
+        fi
     done
 }
 
