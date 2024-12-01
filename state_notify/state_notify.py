@@ -121,7 +121,7 @@ class StateNotify:
         # the currently printing file, the file size, and position across
         # pauses.
         return (self.sdcard.is_active() or
-                (self.sdcard.progress() and self.sdcard.file_path()
+                (self.sdcard.file_path()
                  and self.sdcard.progress() > 0)
                 )
 
