@@ -5,7 +5,7 @@ set -e
 
 KLIPPER_PATH="${HOME}/klipper"
 SYSTEMDDIR="/etc/systemd/system"
-EXTENSION_LIST="gcode_shell_command led_interpolate loop_macro settling_probe state_notify temp_tracker"
+EXTENSION_LIST="gcode_shell_command led_interpolate loop_macro settling_probe state_notify temp_tracker boot_gcode"
 SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/ && pwd )"
 
 # Step 1:  Verify Klipper has been installed
