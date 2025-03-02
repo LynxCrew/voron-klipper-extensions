@@ -15,37 +15,40 @@ class ShellCommand:
     def __init__(self, config):
         self.name = config.get_name().split()[-1]
         self.printer = config.get_printer()
-        self.gcode = self.printer.lookup_object('gcode')
-        gcode_macro = self.printer.lookup_object('gcode_macro')
-        cmd = config.get('command')
+        self.gcode = self.printer.lookup_object("gcode")
+        gcode_macro = self.printer.lookup_object("gcode_macro")
+        cmd = config.get("command")
         cmd = os.path.expanduser(cmd)
         self.command = shlex.split(cmd)
-        self.timeout = config.getfloat('timeout', 2., above=0.)
-        self.verbose = config.getboolean('verbose', False)
+        self.timeout = config.getfloat("timeout", 2.0, above=0.0)
+        self.verbose = config.getboolean("verbose", False)
         self.on_success_template = self.on_failure_template = None
         if config.get("success", None) is not None:
-            self.on_success_template = gcode_macro.load_template(
-                config, 'success', '')
+            self.on_success_template = gcode_macro.load_template(config, "success", "")
         if config.get("failure", None) is not None:
-            self.on_failure_template = gcode_macro.load_template(
-                config, 'failure', '')
+            self.on_failure_template = gcode_macro.load_template(config, "failure", "")
         self.proc_fd = None
         self.partial_output = ""
         self.values = {}
-        prefix = 'value_'
+        prefix = "value_"
         for option in config.get_prefix_options(prefix):
             try:
-                self.values[option[len(prefix):]] = \
-                    ast.literal_eval(config.get(option))
+                self.values[option[len(prefix) :]] = ast.literal_eval(
+                    config.get(option)
+                )
             except ValueError as e:
                 raise config.error(
-                    "Option '%s' in section '%s' is not a valid literal" % (
-                        option, config.get_name()))
+                    "Option '%s' in section '%s' is not a valid literal"
+                    % (option, config.get_name())
+                )
         self.output_var_values = {}
         self.gcode.register_mux_command(
-            "RUN_SHELL_COMMAND", "CMD", self.name,
+            "RUN_SHELL_COMMAND",
+            "CMD",
+            self.name,
             self.cmd_RUN_SHELL_COMMAND,
-            desc=self.cmd_RUN_SHELL_COMMAND_help)
+            desc=self.cmd_RUN_SHELL_COMMAND_help,
+        )
 
     def _process_output(self, eventime):
         if self.proc_fd is None:
@@ -55,11 +58,11 @@ class ShellCommand:
         except Exception:
             pass
         data = self.partial_output + data.decode()
-        if '\n' not in data:
+        if "\n" not in data:
             self.partial_output = data
             return
-        elif data[-1] != '\n':
-            split = data.rfind('\n') + 1
+        elif data[-1] != "\n":
+            split = data.rfind("\n") + 1
             self.partial_output = data[split:]
             data = data[:split]
         else:
@@ -67,7 +70,7 @@ class ShellCommand:
         prefix = "VALUE_UPDATE:"
         for line in [x.strip() for x in data.split("\n")]:
             if line and line.startswith(prefix):
-                var, value = line[len(prefix):].split("=")
+                var, value = line[len(prefix) :].split("=")
                 if var in self.values:
                     self.values[var] = value
         if self.verbose:
@@ -76,17 +79,17 @@ class ShellCommand:
     cmd_RUN_SHELL_COMMAND_help = "Run a linux shell command"
 
     def cmd_RUN_SHELL_COMMAND(self, params):
-        gcode_params = params.get('PARAMS', '')
+        gcode_params = params.get("PARAMS", "")
         gcode_params = shlex.split(gcode_params)
         reactor = self.printer.get_reactor()
         try:
             proc = subprocess.Popen(
                 self.command + gcode_params,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT)
+                stderr=subprocess.STDOUT,
+            )
         except Exception:
-            logging.exception(
-                "shell_command: Command {%s} failed" % (self.name))
+            logging.exception("shell_command: Command {%s} failed" % (self.name))
             raise self.gcode.error("Error running command {%s}" % (self.name))
         self.proc_fd = proc.stdout.fileno()
         hdl = reactor.register_fd(self.proc_fd, self._process_output)
@@ -96,7 +99,7 @@ class ShellCommand:
         endtime = eventtime + self.timeout
         complete = False
         while eventtime < endtime:
-            eventtime = reactor.pause(eventtime + .05)
+            eventtime = reactor.pause(eventtime + 0.05)
             if proc.poll() is not None:
                 complete = True
                 break

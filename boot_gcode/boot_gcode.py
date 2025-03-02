@@ -3,6 +3,7 @@ import logging
 
 GCODE_MUTEX_DELAY = 0.2
 
+
 class BootGcode:
     def __init__(self, config):
         self.printer = config.get_printer()
@@ -19,8 +20,9 @@ class BootGcode:
         if not self.gcode.get_mutex().test():
             return self._run_gcode()
         self.delayed_gcode_timer = self.reactor.register_timer(
-            lambda e: self._delayed_gcode_handler(
-                e), self.reactor.monotonic() + GCODE_MUTEX_DELAY)
+            lambda e: self._delayed_gcode_handler(e),
+            self.reactor.monotonic() + GCODE_MUTEX_DELAY,
+        )
         return None
 
     def _run_gcode(self):
@@ -28,8 +30,7 @@ class BootGcode:
             script = self.boot_gcode.render()
             res = self.gcode.run_script(script)
         except Exception as err:
-            logging.exception("boot_gcode: gcode error: %s" %
-                              (str(err)))
+            logging.exception("boot_gcode: gcode error: %s" % (str(err)))
             res = None
         return res
 
@@ -39,6 +40,7 @@ class BootGcode:
         self._run_gcode()
         self.reactor.unregister_timer(self.delayed_gcode_timer)
         return self.reactor.NEVER
+
 
 def load_config(config):
     return BootGcode(config)
